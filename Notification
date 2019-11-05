@@ -1,0 +1,81 @@
+
+
+ implementation 'com.google.firebase:firebase-messaging:20.0.0'
+ implementation 'com.google.firebase:firebase-analytics:17.2.1'
+ classpath 'com.google.gms:google-services:4.3.2'
+
+    
+Step 1
+
+-create project in firebase
+-add all dependancy
+-add json file to app
+
+
+Step 2
+
+-create java class extending with FireBaseMessaging service
+-add this class in manidest
+
+<service
+       android:name=".MessagingService"
+       android:exported="false">
+           <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+           </intent-filter>
+ </service>
+
+
+Step 3
+
+
+-take override onMessageRecive method in service class
+
+ @Override
+    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
+
+        createNotification(remoteMessage.getNotification().getTitle(),remoteMessage.getNotification().getBody());
+
+    }
+    
+ -create notification channel using this
+ 
+ 
+  private void createNotification(String title, String messageBody) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent resultIntent = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        Uri notificationSoundURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder mNotificationBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_text_fields_black_24dp)
+                .setContentTitle(title)
+                .setContentText(messageBody)
+                .setAutoCancel(true)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
+                        R.drawable.ic_text_fields_black_24dp))
+                .setSound(notificationSoundURI)
+                .setContentIntent(resultIntent);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(121212, mNotificationBuilder.build());
+    }
+
+
+   ********************** for Topic subscription put this code in MainActivity **********************
+   
+    FirebaseMessaging.getInstance().subscribeToTopic("all")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "Success";
+                        if (!task.isSuccessful()) {
+                            msg = "Fail";
+                        }
+
+                    }
+                });
+    }
